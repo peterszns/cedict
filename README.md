@@ -1,2 +1,2 @@
 # cedict
-English Chinese Dictionary
+Chinese English Dictionary
