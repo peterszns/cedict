@@ -6,15 +6,7 @@ import string
 import os
 from sqlite3 import connect
 
-import sqlite3
 import csv
-
-
-# with open('EnWords.csv', 'r', encoding="utf8") as csvfile:
-#     f = csv.reader(csvfile)
-#     for row in f:
-#         print(', '.join(row))
-#
 
 
 class DbSetup:
@@ -51,21 +43,16 @@ class DbSetup:
 
     def search(self, word):
         if self.check_if_english(word):
-            # self.cur.execute('SELECT * FROM words where english LIKE "%s";' % word)
             self.cur.execute(f'SELECT * FROM words where english LIKE "{word}";')
 
             rows = self.cur.fetchall()
-            print(type(rows[0]))
             for row in rows:
-                print('search: ' + str(row))
+                return row
         else:
-            # self.cur.execute('SELECT * FROM words where chinese LIKE "%s";' % word)
             self.cur.execute(f'SELECT * FROM words where chinese LIKE "%{word}%";')
             rows = self.cur.fetchall()
-            self.reduce_chinese_result(rows)
-            for row in rows:
-                print('search: ' + str(row))
 
+            return self.reduce_chinese_result(rows, word)
 
     def check_if_english(self, word):
         for i in word:
@@ -75,15 +62,17 @@ class DbSetup:
             return True
         return False
 
-    def reduce_chinese_result(self, result_list):
+    def reduce_chinese_result(self, result_list, word):
         result_list.sort(key=self.tuple_size)
-        print(result_list)
-
-        # for i in result_list:
-        #     if word in i.split(","):
-        #         return i
-        # else:
-        #     return
+        for row in result_list:
+            for n in row[1].split(","):
+                n = n.replace("n.", "").replace("adj.", "")
+                if n == word:
+                    return row
+            else:
+                return result_list[0]
+        else:
+            return result_list[0]
 
     def tuple_size(self, tuple):
         return len(tuple[1])
@@ -92,4 +81,4 @@ class DbSetup:
 if __name__ == "__main__":
     ds = DbSetup()
     # ds.setupdb()
-    ds.search("苹果")
+    print(ds.search("beautiful"))
